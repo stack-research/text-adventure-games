@@ -1,0 +1,59 @@
+services:
+  game:
+    image: python:3.12-slim
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    command: python courses/engine.py
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: llama3.2:3b
+      COURSE: ${COURSE:-ASI01-Agent-Goal-Hijack}
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    stdin_open: true
+    tty: true
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "21434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  ollama-init:
+    image: curlimages/curl:8.12.1
+    depends_on:
+      - ollama
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "until curl -sf http://ollama:11434/api/tags >/dev/null; do sleep 2; done;
+      curl -sS http://ollama:11434/api/pull -d '{\"model\":\"llama3.2:3b\"}'"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: course
+      POSTGRES_DB: course
+    ports:
+      - "55432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  api:
+    image: mccutchen/go-httpbin:latest
+    ports:
+      - "58080:80"
+
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - "51025:1025"
+      - "58025:8025"
+
+volumes:
+  ollama_data:
+  pg_data:

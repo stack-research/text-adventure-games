@@ -1,0 +1,27 @@
+Course topic: ASI01 - Agent Goal Hijack (OWASP Top 10 for Agentic Applications 2026)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the on-call security engineer for a finance assistant agent. The agent can read internal docs, send email, and trigger payment workflows. During morning triage, a supplier email with an attached procurement brief enters the retrieval pipeline. Hidden instructions in the document attempt to redirect the agent's goal from invoice review to silent data exfiltration and unauthorized payment approval."
+
+Ground truth from ASI01 source material:
+- Description: agent goals can be manipulated by prompt-based tricks, deceptive outputs, malicious artifacts, forged messages, or poisoned external data.
+- Common example selected: indirect prompt injection via hidden instruction payloads in documents/RAG that redirect behavior and exfiltrate data.
+- Attack scenario selected: operator prompt injection via web/document content that causes unauthorized instruction-following and private data exposure.
+
+Canonical successful mitigation path (5 stages):
+1) Input trust boundary: Treat incoming language/doc content as untrusted. Quarantine suspicious document and enable prompt-injection/content filtering before planning/tool use.
+2) Blast-radius reduction: enforce least privilege on tools and require human approval for high-impact actions (payments, outbound sensitive data).
+3) Goal integrity: lock and audit system prompt/goal policy so runtime content cannot redefine core objectives.
+4) Runtime intent checks: compare current proposed action to original task; pause/block any goal shift or out-of-scope action.
+5) Data-source hygiene + monitoring: sanitize connected sources (docs/email/APIs) and log/monitor goal state + tool-use anomalies.
+
+Pass criteria:
+- Player must reach all five mitigation themes in logical order, even if wording varies.
+- Be tolerant of natural phrasing and partial wording.
+- Once stage 5 is reasonably satisfied, return verdict "pass".
+
+Fail criteria:
+- If player approves dangerous actions (e.g., execute hidden instructions, send sensitive data, approve payment without verification, disable safeguards) return "fail" immediately.
+- If player abandons oversight or allows autonomous execution without safeguards (e.g., "run the agent and go home for the weekend"), return "fail" immediately.
+- On fail, explain consequences (compromise, fraud, exfiltration) and what control was missing.
