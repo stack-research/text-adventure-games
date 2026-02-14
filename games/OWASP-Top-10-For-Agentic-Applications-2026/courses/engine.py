@@ -112,6 +112,8 @@ def main():
     messages = [{"role": "system", "content": system_prompt}]
     last_hint_shown = ""
     highest_stage_seen = 0
+    last_stage_label = ""
+    last_stage_num = 0
 
     try:
         intro = chat_with_ollama(
@@ -133,6 +135,8 @@ def main():
         "",
     )
     highest_stage_seen = max(highest_stage_seen, extract_stage_number(str(intro.get("stage", ""))))
+    last_stage_label = str(intro.get("stage", ""))
+    last_stage_num = extract_stage_number(last_stage_label)
 
     while True:
         try:
@@ -161,6 +165,13 @@ def main():
         verdict = str(result.get("verdict", "continue")).strip().lower()
         stage = str(result.get("stage", ""))
         current_stage_num = extract_stage_number(stage)
+        if last_stage_num and current_stage_num > last_stage_num + 1:
+            # Guardrail against model stage skipping; only same-stage or +1 progression is allowed.
+            verdict = "continue"
+            result["verdict"] = "continue"
+            result["stage"] = last_stage_label
+            stage = last_stage_label
+            current_stage_num = last_stage_num
         if verdict == "fail" and not looks_clearly_dangerous(player_input):
             # Guardrail against occasional model drift that fails vague/non-dangerous actions.
             verdict = "continue"
@@ -186,6 +197,10 @@ def main():
         if display_hint:
             last_hint_shown = display_hint
         highest_stage_seen = max(highest_stage_seen, current_stage_num)
+        if stage:
+            last_stage_label = stage
+        if current_stage_num:
+            last_stage_num = current_stage_num
 
         if verdict in {"pass", "fail"}:
             print(f"\n\nCourse result: {verdict.upper()}")
