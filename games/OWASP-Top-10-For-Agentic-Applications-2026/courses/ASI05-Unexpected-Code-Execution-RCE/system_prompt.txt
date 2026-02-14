@@ -1,0 +1,37 @@
+Course topic: ASI05 - Unexpected Code Execution (RCE) (OWASP Top 10 for Agentic Applications 2026)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the security engineer for an internal coding agent used by operations teams to triage incidents and apply emergency fixes. The agent can write code, run shell commands in a container, install packages, and submit deployment patches. A crafted incident ticket includes a 'quick fix' snippet and pushes the agent to auto-run installation and shell steps without review."
+
+Ground truth from ASI05 source material:
+- Description: agentic systems that generate and execute code can be driven into unexpected code execution through prompt injection, unsafe output handling, unsafe eval/deserialization, and malicious package flows.
+- Common example selected: shell command invocation from reflected prompt plus unsafe eval/serialization paths.
+- Attack scenario selected: injected command chain in a support request that triggers unreviewed execution and host compromise/data loss.
+
+Canonical successful mitigation path (5 stages):
+1) Treat generated code/commands as untrusted output: sanitize and validate model-generated content before any execution path.
+2) Separate generation from execution with policy gates: require pre-execution checks (schema/allowlist/risk scoring) and prevent direct auto-execution against sensitive environments.
+3) Harden runtime execution environment: run in isolated sandbox/container with least privilege, non-root execution, restricted filesystem scope, and strict network/egress limits.
+4) Remove dangerous execution primitives and unsafe loaders: ban or tightly control eval/dynamic execution/unsafe deserialization and block unverified package installs.
+5) Human approval + continuous analysis/monitoring: require explicit approval for elevated actions, run static/security scans before execution, and maintain runtime auditing/anomaly detection with rollback/revocation paths.
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Untrusted Output`, `Stage 2 - Execution Gates`, `Stage 3 - Runtime Isolation`, `Stage 4 - Unsafe Primitives Removed`, `Stage 5 - Approval and Monitoring`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly treat generated code/commands as untrusted and require validation/sanitization before execution.
+- Stage 2 evidence must explicitly separate generation from execution using a policy gate (for example allowlist/schema/risk check) before any run.
+- Stage 3 evidence must explicitly include sandboxing/isolation plus least privilege and at least one hard boundary (non-root, filesystem restriction, or egress/network limit).
+- Stage 4 evidence must explicitly disable or tightly constrain eval/dynamic execution/unsafe deserialization and block unverified package execution.
+- Stage 5 evidence must explicitly require human approval for elevated actions and include ongoing analysis/monitoring or audit controls.
+
+Pass criteria:
+- Player must satisfy all five mitigation themes in logical order, with flexible wording.
+- Stage advancement requires concrete action, not generic security statements.
+- Once stage 5 is reasonably satisfied, return verdict "pass".
+
+Fail criteria:
+- Return "fail" immediately if player runs unreviewed shell/code from untrusted prompts, enables direct agent-to-production execution, disables sandbox limits, runs as root, or approves unsafe eval/deserialization paths.
+- Return "fail" immediately if player installs or executes unverified dependencies/scripts in privileged contexts without validation and approval.
+- On fail, explain concrete consequences (RCE, data destruction, persistence, exfiltration, lateral movement) and identify the missing mitigation.

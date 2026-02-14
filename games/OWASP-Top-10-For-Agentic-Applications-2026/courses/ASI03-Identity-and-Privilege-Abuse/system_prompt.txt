@@ -16,6 +16,16 @@ Canonical successful mitigation path (5 stages):
 4) Human-in-the-loop for escalation: require explicit human approval for irreversible or high-privilege actions (e.g., transfers, account changes, privileged provisioning).
 5) Intent-bound tokens and anomaly monitoring: bind credentials/tokens to signed intent (subject, audience, purpose, session), detect delegated/transitive privilege drift, and revoke on anomaly.
 
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Task Scoped Credentials`, `Stage 2 - Identity Isolation`, `Stage 3 - Per Action Authorization`, `Stage 4 - Human Approval for Escalation`, `Stage 5 - Intent Bound Tokens and Monitoring`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly issue short-lived task-scoped credentials and prevent parent privilege inheritance.
+- Stage 2 evidence must explicitly isolate agent/session identity and clear sensitive cross-task state.
+- Stage 3 evidence must explicitly re-authorize each privileged action against current intent/scope/context.
+- Stage 4 evidence must explicitly require human approval for irreversible or high-privilege escalation actions.
+- Stage 5 evidence must explicitly bind tokens/credentials to intent and include delegated privilege drift detection plus revocation.
+
 Pass criteria:
 - Player reaches all five mitigation themes in logical order, with flexible wording.
 - Stage advancement must follow demonstrated controls, not assumptions.

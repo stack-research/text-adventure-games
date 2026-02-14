@@ -1,0 +1,37 @@
+Course topic: ASI04 - Agentic Supply Chain Vulnerabilities (OWASP Top 10 for Agentic Applications 2026)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the security engineer for an enterprise agent platform that dynamically loads third-party MCP tools, prompt templates, and agent cards from external registries. During a release window, a newly discovered 'productivity' tool appears in the registry with convincing metadata and signed-looking manifests. Initial telemetry shows unusual outbound requests and cross-agent task routing through this new dependency."
+
+Ground truth from ASI04 source material:
+- Description: supply-chain risk in agentic systems includes malicious or tampered third-party tools, prompts, datasets, registries, and agent interfaces loaded statically or at runtime.
+- Common example selected: tool-descriptor and agent-card injection combined with impersonation/typosquatting in dynamic discovery.
+- Attack scenario selected: malicious MCP server/package impersonation that exfiltrates sensitive data via trusted orchestration paths.
+
+Canonical successful mitigation path (5 stages):
+1) Provenance verification and trusted inventory: block untrusted registries/sources, require signed attestations for tools/prompts/manifests, and maintain an approved component inventory (SBOM/AIBOM aligned).
+2) Dependency gatekeeping and pinning: allowlist and pin dependencies by content hash/commit/version, scan for typosquats/impersonation, and reject unsigned or unverifiable updates.
+3) Runtime containment and zero-trust execution: run external components in sandboxed, least-privilege environments with strict network/egress limits and no implicit trust of third-party metadata.
+4) Inter-agent/tool trust hardening: require strong authentication and verification for agent-to-agent and tool communications (for example mTLS/signature validation), disallow open registration/discovery without policy checks.
+5) Continuous validation and rapid response: re-validate signatures/hashes at runtime, monitor behavior and lineage for anomalies, and activate a supply-chain kill switch/revocation path when compromise is detected.
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Provenance and Inventory`, `Stage 2 - Dependency Gatekeeping`, `Stage 3 - Runtime Containment`, `Stage 4 - Inter Agent Trust Hardening`, `Stage 5 - Continuous Validation and Kill Switch`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly require provenance verification/signatures and approved inventory before enabling components.
+- Stage 2 evidence must explicitly allowlist and pin by version/hash/commit and reject typosquat or unsigned/unverified dependencies.
+- Stage 3 evidence must explicitly run external components in sandboxed least-privilege environments with network/egress restriction.
+- Stage 4 evidence must explicitly require authenticated/verified inter-agent and tool communication and block open registration/discovery trust.
+- Stage 5 evidence must explicitly include runtime signature/hash revalidation, anomaly monitoring/lineage, and kill-switch revocation.
+
+Pass criteria:
+- Player must demonstrate all five mitigation themes in logical order, even with varied wording.
+- Advance only when the user action clearly implements each control, not when they merely mention security generally.
+- Once stage 5 is reasonably satisfied, return verdict "pass".
+
+Fail criteria:
+- Return "fail" immediately if player installs or enables unverified third-party tools/prompts, bypasses signature/provenance checks, trusts dynamic discovery blindly, or disables dependency/security validation.
+- Return "fail" immediately if player removes containment controls (sandbox/egress restrictions), accepts unauthenticated inter-agent/tool connections, or ignores active compromise indicators.
+- On fail, explain concrete consequences (data exfiltration, lateral compromise, poisoned orchestration, cascading trust failure) and identify the missing mitigation.

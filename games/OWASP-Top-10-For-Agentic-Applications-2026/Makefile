@@ -1,6 +1,6 @@
 COMPOSE ?= docker compose
 
-.PHONY: help up init run-asi01 run-asi02 run-asi03 course-list down
+.PHONY: help up init run-asi01 run-asi02 run-asi03 run-asi04 run-asi05 course-list down
 
 help:
 	@echo "Targets:"
@@ -8,6 +8,8 @@ help:
 	@echo "  make run-asi01                  # Run ASI01 course"
 	@echo "  make run-asi02                  # Run ASI02 course"
 	@echo "  make run-asi03                  # Run ASI03 course"
+	@echo "  make run-asi04                  # Run ASI04 course"
+	@echo "  make run-asi05                  # Run ASI05 course"
 	@echo "  make up                         # Start support services"
 	@echo "  make init                       # Pull/initialize LLM model"
 	@echo "  make down                       # Stop all services"
@@ -26,6 +28,12 @@ run-asi02: init
 
 run-asi03: init
 	COURSE=ASI03-Identity-and-Privilege-Abuse $(COMPOSE) run --rm game
+
+run-asi04: init
+	COURSE=ASI04-Agentic-Supply-Chain-Vulnerabilities $(COMPOSE) run --rm game
+
+run-asi05: init
+	COURSE=ASI05-Unexpected-Code-Execution-RCE $(COMPOSE) run --rm game
 
 course-list:
 	@find courses -mindepth 1 -maxdepth 1 -type d -exec basename {} \; \

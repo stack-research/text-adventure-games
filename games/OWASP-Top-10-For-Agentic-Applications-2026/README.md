@@ -4,6 +4,8 @@ This repo includes a basic playable course for:
 - `ASI01-Agent-Goal-Hijack`
 - `ASI02-Tool-Misuse-and-Exploitation`
 - `ASI03-Identity-and-Privilege-Abuse`
+- `ASI04-Agentic-Supply-Chain-Vulnerabilities`
+- `ASI05-Unexpected-Code-Execution-RCE`
 
 The course is an LLM-judged text adventure. The model both:
 - decides pass/fail based on mitigation choices
@@ -16,6 +18,8 @@ make course-list
 make run-asi01
 make run-asi02
 make run-asi03
+make run-asi04
+make run-asi05
 ```
 
 This starts support services, initializes the OSS model, and launches an interactive game session.
@@ -45,9 +49,11 @@ Courses are scenario-specific and follow the selected ASI guidance. Example ASI0
 - Global invariant LLM rules live in `courses/base_system_prompt.txt`.
 - Each course lives in its own directory under `courses/<COURSE_NAME>/`.
 - Example course prompt paths:
-  - `courses/ASI01-Agent-Goal-Hijack/system_prompt.txt`
-  - `courses/ASI02-Tool-Misuse-and-Exploitation/system_prompt.txt`
-  - `courses/ASI03-Identity-and-Privilege-Abuse/system_prompt.txt`
+- `courses/ASI01-Agent-Goal-Hijack/system_prompt.txt`
+- `courses/ASI02-Tool-Misuse-and-Exploitation/system_prompt.txt`
+- `courses/ASI03-Identity-and-Privilege-Abuse/system_prompt.txt`
+- `courses/ASI04-Agentic-Supply-Chain-Vulnerabilities/system_prompt.txt`
+- `courses/ASI05-Unexpected-Code-Execution-RCE/system_prompt.txt`
 - The generic runner is `courses/engine.py` and loads the course from the `COURSE` environment variable.
 
 ## Notes

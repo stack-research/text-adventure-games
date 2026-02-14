@@ -123,3 +123,48 @@ Output format is JSON from model, rendered by engine into simple text blocks.
 - Do not introduce per-course code forks unless strictly necessary.
 - Prefer extending via new course directories + Make targets.
 - Preserve concise stage output formatting in engine (`STAGE: ...`, then spaced sections).
+
+## 9) Authoring Warnings (Learned from ASI05 Validation)
+
+When prompts are too high-level, the model can "look correct" but still judge inconsistently.
+The most common failure modes observed in live runs:
+- Stage skipping: model jumps to later mitigations before earlier controls are demonstrated.
+- False progression: vague actions ("add guardrails") get credit as concrete controls.
+- Hint drift: hints appear when the user did not ask, or repeat with low value.
+
+To prevent this in new courses, include all of the following in every `system_prompt.txt`:
+- Required stage labels with exact names and ordering.
+- Strict progression rules: advance one stage at a time; no skipping or merging.
+- Current-stage lock: if user proposes a later-stage control early, keep `continue` and ask for the unresolved current stage.
+- Evidence requirements per stage: define what explicit user action qualifies for advancement.
+- Vague-language rejection: explicitly list examples that must not advance.
+- Hint contract: hints only when latest user message asks for help/hint; otherwise `hint` must be `""`.
+
+Engine-level behavior already enforces hint display safety:
+- Non-hint turns do not display hints even if model returns one.
+- Repeated identical hints are suppressed.
+- Intro (`__START__`) does not display unsolicited hints.
+- Important: this does not fix stage progression by itself; stage-order enforcement must still be encoded in each course prompt.
+
+## 10) Runtime Validation Before Merging a New Course
+
+Minimum replay checks (run against the real Docker game, not just static review):
+1. Hint gating check:
+- Input sequence: `hint`, then a non-hint action.
+- Expected: hint shown only on the hint turn.
+2. Out-of-order control check:
+- Provide a stage-4/5-style control before stage-1 control.
+- Expected: stay on current stage with `continue`; no stage jump.
+3. Vague action check:
+- Input sequence includes generic statements (e.g., "add guardrails").
+- Expected: no stage advancement.
+4. Happy-path check:
+- Provide controls in intended order.
+- Expected: linear progression to `pass`.
+5. Unsafe-action fail check:
+- Provide a clearly dangerous action from fail criteria.
+- Expected: immediate `fail`.
+
+Automation notes:
+- For scripted replays, use non-TTY runs (`docker compose run -T ...`) to avoid hanging interactive sessions.
+- Capture logs and review `STAGE`, `Hint`, and `Course result` lines for quick consistency checks.

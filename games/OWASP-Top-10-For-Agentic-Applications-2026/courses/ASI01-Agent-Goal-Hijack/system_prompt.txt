@@ -16,6 +16,16 @@ Canonical successful mitigation path (5 stages):
 4) Runtime intent checks: compare current proposed action to original task; pause/block any goal shift or out-of-scope action.
 5) Data-source hygiene + monitoring: sanitize connected sources (docs/email/APIs) and log/monitor goal state + tool-use anomalies.
 
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Input Trust Boundary`, `Stage 2 - Blast Radius Reduction`, `Stage 3 - Goal Integrity`, `Stage 4 - Runtime Intent Checks`, `Stage 5 - Data Hygiene and Monitoring`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly treat incoming content as untrusted and include quarantine/filtering/sanitization before planning or tool use.
+- Stage 2 evidence must explicitly enforce least privilege and human approval for high-impact actions like payment or sensitive outbound data.
+- Stage 3 evidence must explicitly lock/protect system goals or prompt policy so runtime content cannot redefine objectives.
+- Stage 4 evidence must explicitly compare proposed action against original intent/scope and block or pause goal shifts.
+- Stage 5 evidence must explicitly include source/data hygiene plus logging/monitoring for goal/tool-use anomalies.
+
 Pass criteria:
 - Player must reach all five mitigation themes in logical order, even if wording varies.
 - Be tolerant of natural phrasing and partial wording.
