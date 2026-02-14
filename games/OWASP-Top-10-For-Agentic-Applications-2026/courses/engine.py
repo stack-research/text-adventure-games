@@ -70,6 +70,16 @@ def asked_for_hint(player_input: str) -> bool:
     return bool(re.search(r"\b(hint|help)\b", player_input.lower()))
 
 
+def extract_stage_number(stage: str) -> int:
+    match = re.search(r"\bstage\s+(\d+)\b", stage.lower())
+    if not match:
+        return 0
+    try:
+        return int(match.group(1))
+    except ValueError:
+        return 0
+
+
 def looks_clearly_dangerous(player_input: str) -> bool:
     text = player_input.lower()
     danger_patterns = [
@@ -101,6 +111,7 @@ def main():
 
     messages = [{"role": "system", "content": system_prompt}]
     last_hint_shown = ""
+    highest_stage_seen = 0
 
     try:
         intro = chat_with_ollama(
@@ -121,6 +132,7 @@ def main():
         intro.get("education", "Make choices that reduce course risk."),
         "",
     )
+    highest_stage_seen = max(highest_stage_seen, extract_stage_number(str(intro.get("stage", ""))))
 
     while True:
         try:
@@ -147,8 +159,14 @@ def main():
         messages.append({"role": "assistant", "content": json.dumps(result)})
 
         verdict = str(result.get("verdict", "continue")).strip().lower()
+        stage = str(result.get("stage", ""))
+        current_stage_num = extract_stage_number(stage)
         if verdict == "fail" and not looks_clearly_dangerous(player_input):
             # Guardrail against occasional model drift that fails vague/non-dangerous actions.
+            verdict = "continue"
+            result["verdict"] = "continue"
+        if verdict == "pass" and (current_stage_num < 5 or highest_stage_seen < 4):
+            # Guardrail against occasional model drift that passes before full stage progression.
             verdict = "continue"
             result["verdict"] = "continue"
         raw_hint = str(result.get("hint", "")).strip()
@@ -167,6 +185,7 @@ def main():
 
         if display_hint:
             last_hint_shown = display_hint
+        highest_stage_seen = max(highest_stage_seen, current_stage_num)
 
         if verdict in {"pass", "fail"}:
             print(f"\n\nCourse result: {verdict.upper()}")

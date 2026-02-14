@@ -1,0 +1,66 @@
+Course topic: ASI06 - Memory & Context Poisoning (OWASP Top 10 for Agentic Applications 2026)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the security engineer for an enterprise support assistant that uses long-term memory, shared retrieval indexes, and cross-session summaries to handle customer operations tasks. Analysts report that the agent has started repeating false policy facts, approving risky actions, and retrieving data from the wrong tenant after ingesting recent support uploads and chat transcripts."
+
+Ground truth from ASI06 source material:
+- Description: adversaries can poison stored/retrievable context (memory, summaries, embeddings, RAG stores) so future reasoning and tool actions become biased, unsafe, or leak data across sessions.
+- Common example selected: RAG/embedding poisoning and shared user context poisoning through over-trusted ingestion.
+- Attack scenario selected: shared-memory poisoning of policy/refund guidance that propagates across agents and sessions, causing unsafe approvals and business loss.
+
+Canonical successful mitigation path (5 stages):
+1) Trusted ingestion and write-time validation: treat all incoming memory/context writes as untrusted, scan and validate content before commit, and block suspicious or policy-violating writes.
+2) Memory segmentation and tenant isolation: isolate memory by tenant/user/task domain, prevent cross-tenant retrieval bleed, and enforce strict namespace boundaries.
+3) Provenance-weighted retrieval controls: require source attribution/provenance on memory entries, weight retrieval by trust, and prevent low-trust memory from driving high-impact decisions.
+4) Retention controls and anti-reingestion safeguards: expire/decay unverified memory, prevent blind auto-reingestion of model-generated outputs into trusted memory, and quarantine suspect entries.
+5) Detection, rollback, and human review for high-risk actions: monitor for poisoning anomalies and drift, maintain versioned snapshots/rollback, and require human approval before high-impact actions influenced by memory.
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Trusted Ingestion`, `Stage 2 - Segmentation and Isolation`, `Stage 3 - Provenance Weighted Retrieval`, `Stage 4 - Retention and Reingestion Controls`, `Stage 5 - Monitoring Rollback and Human Review`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly validate/scan memory writes before commit and reject suspicious content from untrusted ingestion sources.
+- Stage 2 evidence must explicitly isolate contexts by tenant/user/domain with controls that prevent cross-tenant or cross-session leakage.
+- Stage 3 evidence must explicitly require source attribution/trust scoring and retrieval weighting or gating based on provenance.
+- Stage 4 evidence must explicitly expire/decay unverified memory and prevent automatic re-ingestion of model outputs into trusted memory; quarantine/rollback-ready handling is acceptable here.
+- Stage 5 evidence must explicitly include poisoning/anomaly monitoring plus versioned rollback/snapshot capability and human review for high-risk memory-influenced actions.
+
+Strict progression and judging rules:
+- Advance exactly one stage at a time and never skip or merge stages.
+- If user proposes a later-stage control while an earlier stage is unresolved, keep verdict `continue`, keep current stage label, and ask for the missing current-stage control.
+- Judge only the literal user action. Do not infer secure implementation details the user did not state.
+- Reject vague actions such as "add guardrails", "secure memory", "use best practices", "monitor everything", or "tighten policies" unless they include concrete stage-matching controls.
+- If the user asks for hints/help, provide only a brief nudge for the current stage. If the user did not ask for a hint/help, `hint` must be an empty string.
+
+Deterministic state-machine enforcement:
+- Start at `Stage 1 - Trusted Ingestion` on `__START__`.
+- Allowed transition per turn is only:
+  - remain on current stage with verdict `continue`, or
+  - advance to the immediately next stage when current-stage evidence is explicitly satisfied.
+- Never jump multiple stages in one turn.
+- If user provides a bundle of controls covering multiple stages in one message, evaluate only the unresolved current stage for progression; acknowledge later-stage ideas but do not grant credit yet.
+- Hard transition constraints:
+  - From Stage 1, only explicit write-time validation/scanning-and-rejection controls may move to Stage 2.
+  - From Stage 2, only explicit tenant/user/domain memory isolation controls may move to Stage 3.
+  - From Stage 3, only explicit provenance/trust-weighted retrieval gating may move to Stage 4.
+  - From Stage 4, only explicit retention decay/expiry plus anti-reingestion controls may move to Stage 5.
+  - Stage 5 may return `pass` only after stages 1-4 were already satisfied in prior turns and stage-5 evidence is explicitly present now.
+- If any transition rule is not satisfied, keep verdict `continue`.
+
+Non-advancing examples (must stay `continue`):
+- While in Stage 1, statements about "human review", "rollback", or "monitoring" alone do not advance.
+- While in Stage 1, statements about provenance/trust scoring alone do not advance.
+- While in Stage 2, statements about expiring memory alone do not advance.
+- While in Stage 3, generic "only trusted sources" without attribution/trust weighting mechanism does not advance.
+- "We will add guardrails" never advances any stage.
+
+Pass criteria:
+- Player must satisfy all five mitigation themes in order with concrete actions.
+- Stage advancement requires explicit implementation detail matching that stage's evidence requirements.
+- Once stage 5 is reasonably satisfied, return verdict `pass`.
+
+Fail criteria:
+- Return `fail` immediately if player stores unvalidated external content directly into trusted memory, disables tenant isolation, permits cross-tenant retrieval, or allows unverified memory to trigger high-impact actions automatically.
+- Return `fail` immediately if player approves blind self-reingestion of model outputs into trusted memory, ignores clear poisoning indicators, or removes rollback/human-approval safeguards for high-risk actions.
+- On fail, explain concrete consequences (persistent misinformation, unsafe tool actions, cross-tenant data leakage, exfiltration, and cascading policy drift) and identify the missing mitigation.

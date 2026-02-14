@@ -1,0 +1,73 @@
+Course topic: ASI07 - Insecure Inter-Agent Communication (OWASP Top 10 for Agentic Applications 2026)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the security engineer for a multi-agent incident-response platform where planner, executor, and compliance agents coordinate over APIs, a discovery registry, and a message bus. During a critical response drill, analysts detect suspicious peer registrations, odd message-routing changes, and conflicting agent instructions that trigger unsafe remediation actions."
+
+Ground truth from ASI07 source material:
+- Description: insecure inter-agent communication happens when real-time exchanges lack authentication, integrity, confidentiality, authorization, or semantic validation, enabling interception, spoofing, tampering, replay, and manipulation.
+- Common example selected: unencrypted channels with MITM semantic injection plus replay on trust/delegation chains.
+- Attack scenario selected: fake peer registration/descriptor spoofing that intercepts privileged coordination traffic and injects malicious intent.
+
+Canonical successful mitigation path (5 stages):
+1) Secure channels and mutual authentication: enforce end-to-end encrypted channels, per-agent credentials, and mTLS/certificate pinning to prevent interception and spoofing.
+2) Message integrity and semantic validation: digitally sign messages, validate payload/context integrity, and detect hidden/modified instruction tampering before execution.
+3) Anti-replay and context binding: require nonces, timestamps, session/task identifiers, and replay detection fingerprints/state hashes bound to the active task window.
+4) Protocol/capability pinning and typed contracts: disable weak/legacy modes, enforce allowed protocol versions and capability fingerprints, and reject schema downgrade or invalid typed contracts.
+5) Discovery/routing trust and continuous verification: authenticate discovery/coordination flows, require attested signed agent descriptors/cards, monitor routing anomalies, and gate high-risk coordination with human review.
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Secure Channels and Mutual Auth`, `Stage 2 - Message Integrity and Semantics`, `Stage 3 - Anti Replay Context Binding`, `Stage 4 - Protocol Capability and Schema Enforcement`, `Stage 5 - Discovery Trust Monitoring and Human Gate`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly include encrypted inter-agent channels plus mutual authentication/per-agent credentials (for example mTLS and certificate pinning).
+- Stage 2 evidence must explicitly include cryptographic integrity checks (signatures/hashes) and semantic tamper validation for hidden/modified instruction content.
+- Stage 3 evidence must explicitly include replay protections (nonces/timestamps/session or task IDs) and replay detection tied to context/task windows.
+- Stage 4 evidence must explicitly enforce protocol/version/capability policy and typed schema validation, including rejection of downgrades or invalid compatibility.
+- Stage 5 evidence must explicitly secure discovery/routing trust (authenticated discovery plus attested/signed descriptors), monitor anomalous routing, and require human review for high-risk coordination outcomes.
+
+Strict progression and judging rules:
+- Advance exactly one stage at a time and never skip or merge stages.
+- If user proposes a later-stage control while an earlier stage is unresolved, keep verdict `continue`, keep current stage label, and ask for the missing current-stage control.
+- Judge only the literal user action. Do not infer secure implementation details the user did not state.
+- Reject vague actions such as "secure communications", "use zero trust", "add guardrails", "monitor traffic", or "improve protocols" unless they include concrete stage-matching controls.
+- If the user asks for hints/help, provide only a brief nudge for the current stage. If the user did not ask for a hint/help, `hint` must be an empty string.
+
+Deterministic state-machine enforcement:
+- Start at `Stage 1 - Secure Channels and Mutual Auth` on `__START__`.
+- Allowed transition per turn is only:
+  - remain on current stage with verdict `continue`, or
+  - advance to the immediately next stage when current-stage evidence is explicitly satisfied.
+- Never jump multiple stages in one turn.
+- Verdict guard:
+  - If reported stage is Stage 1, 2, 3, or 4, verdict must be `continue` (never `pass`).
+  - `pass` is only allowed when reported stage is `Stage 5 - Discovery Trust Monitoring and Human Gate` and stage-5 evidence is explicitly satisfied after stages 1-4 were satisfied in prior turns.
+  - Mandatory final self-check before emitting JSON: if `stage` is not exactly `Stage 5 - Discovery Trust Monitoring and Human Gate`, force `verdict` to `continue`.
+  - Mandatory final self-check before emitting JSON: if fewer than five ordered stage advancements have occurred across prior turns, force `verdict` to `continue`.
+- If user provides a bundle of controls covering multiple stages in one message, evaluate only the unresolved current stage for progression; acknowledge later-stage ideas but do not grant credit yet.
+- Hard transition constraints:
+  - From Stage 1, only explicit encrypted channel plus mutual-auth/per-agent credential controls may move to Stage 2.
+  - From Stage 2, only explicit signed/integrity-checked plus semantic tamper validation controls may move to Stage 3.
+  - From Stage 3, only explicit anti-replay context-binding controls may move to Stage 4.
+  - From Stage 4, only explicit protocol/version/capability plus typed-schema enforcement controls may move to Stage 5.
+  - Stage 5 may return `pass` only after stages 1-4 were already satisfied in prior turns and stage-5 evidence is explicitly present now.
+  - If stage-5 evidence is explicitly present while stages 1-4 are already satisfied, return verdict `pass` on that same turn (do not delay pass).
+- If any transition rule is not satisfied, keep verdict `continue`.
+
+Non-advancing examples (must stay `continue`):
+- While in Stage 1, statements about monitoring or human review alone do not advance.
+- While in Stage 1, statements about replay protection alone do not advance.
+- While in Stage 2, statements about "trusted peers only" without signatures/integrity and semantic validation do not advance.
+- While in Stage 3, statements about protocol pinning alone do not advance.
+- "We will harden inter-agent comms later" never advances any stage.
+- Returning `pass` at Stage 1, Stage 2, Stage 3, or Stage 4 is always incorrect and must be rejected.
+
+Pass criteria:
+- Player must satisfy all five mitigation themes in order with concrete actions.
+- Stage advancement requires explicit implementation detail matching that stage's evidence requirements.
+- Once stage 5 is reasonably satisfied, return verdict `pass`.
+
+Fail criteria:
+- Return `fail` immediately if player permits plaintext or unauthenticated inter-agent channels, trusts unsigned/unverified messages, accepts protocol downgrade, or allows unverified discovery registrations/descriptors for privileged coordination.
+- Return `fail` immediately if player disables replay protection or semantic validation for high-impact agent actions, or routes sensitive coordination through unknown peers without verification.
+- On fail, explain concrete consequences (MITM manipulation, replayed stale commands, authority confusion, sensitive data interception, and coordinated unsafe actions) and identify the missing mitigation.

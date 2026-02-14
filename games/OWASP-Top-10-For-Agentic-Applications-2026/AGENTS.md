@@ -103,6 +103,7 @@ Output format is JSON from model, rendered by engine into simple text blocks.
   - explicit unsafe action path to `fail`
   - vague/non-mitigating action remains `continue`
   - hint requests provide nudges but no full solution
+- Smoke testing is required before merge (see Section 10) and must be run against the real Docker game.
 
 7. Update documentation.
 - If needed, update `README.md` course examples and shortcuts.
@@ -146,7 +147,11 @@ Engine-level behavior already enforces hint display safety:
 - Intro (`__START__`) does not display unsolicited hints.
 - Important: this does not fix stage progression by itself; stage-order enforcement must still be encoded in each course prompt.
 
-## 10) Runtime Validation Before Merging a New Course
+## 10) Runtime Validation (Required) Before Merging a Course
+
+This smoke suite is the standard for all course changes.
+- Run these checks for every new course and for prompt changes to existing courses.
+- Do not merge until all checks pass in non-TTY replay runs.
 
 Minimum replay checks (run against the real Docker game, not just static review):
 1. Hint gating check:
