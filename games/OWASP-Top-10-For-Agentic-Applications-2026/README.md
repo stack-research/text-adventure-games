@@ -36,6 +36,7 @@ make down
 - Type actions in plain English.
 - Type `hint` to get a nudge.
 - Type `quit` to exit.
+- If you get stuck on a course/stage, use `./OWASP-Top-10-for-Agentic-Applications-2026-12.6-1.pdf` as your reference guide.
 
 Courses are scenario-specific and follow the selected ASI guidance. Example ASI01 themes:
 - untrusted input handling
