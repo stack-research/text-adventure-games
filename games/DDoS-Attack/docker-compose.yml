@@ -1,0 +1,50 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ddos-ollama
+    ports:
+      - "11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  model-puller:
+    image: curlimages/curl:8.12.1
+    container_name: ddos-model-puller
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command: >
+      sh -c "
+      echo 'Pulling model llama3.2:3b...' &&
+      curl -fsS http://ollama:11434/api/tags > /dev/null &&
+      curl -fsS http://ollama:11434/api/pull
+      -H 'Content-Type: application/json'
+      -d '{\"model\":\"llama3.2:3b\"}'
+      "
+    restart: "no"
+
+  game:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: ddos-game
+    depends_on:
+      model-puller:
+        condition: service_completed_successfully
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: llama3.2:3b
+      PROMPT_FILE: /prompts/game_master_prompt.md
+      TURN_LIMIT: 12
+    volumes:
+      - ./prompts:/prompts:ro
+    stdin_open: true
+    tty: true
+
+volumes:
+  ollama_data:
