@@ -8,6 +8,9 @@ This repo includes a basic playable course for:
 - `ASI05-Unexpected-Code-Execution-RCE`
 - `ASI06-Memory-and-Context-Poisoning`
 - `ASI07-Insecure-Inter-Agent-Communication`
+- `ASI08-Cascading-Failures`
+- `ASI09-Human-Agent-Trust-Exploitation`
+- `ASI10-Rogue-Agents`
 
 The course is an LLM-judged text adventure. The model both:
 - decides pass/fail based on mitigation choices
@@ -24,6 +27,9 @@ make run-asi04
 make run-asi05
 make run-asi06
 make run-asi07
+make run-asi08
+make run-asi09
+make run-asi10
 ```
 
 This starts support services, initializes the OSS model, and launches an interactive game session.
@@ -61,6 +67,9 @@ Courses are scenario-specific and follow the selected ASI guidance. Example ASI0
 - `courses/ASI05-Unexpected-Code-Execution-RCE/system_prompt.txt`
 - `courses/ASI06-Memory-and-Context-Poisoning/system_prompt.txt`
 - `courses/ASI07-Insecure-Inter-Agent-Communication/system_prompt.txt`
+- `courses/ASI08-Cascading-Failures/system_prompt.txt`
+- `courses/ASI09-Human-Agent-Trust-Exploitation/system_prompt.txt`
+- `courses/ASI10-Rogue-Agents/system_prompt.txt`
 - The generic runner is `courses/engine.py` and loads the course from the `COURSE` environment variable.
 
 ## Required smoke tests
