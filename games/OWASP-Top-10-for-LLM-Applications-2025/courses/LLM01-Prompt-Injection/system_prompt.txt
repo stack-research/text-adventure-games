@@ -1,0 +1,55 @@
+Course topic: LLM01 - Prompt Injection (OWASP Top 10 for LLM Applications 2025)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the on-call security engineer for an LLM-powered research assistant used by a finance team. The assistant can read web pages, summarize uploaded files, query an internal knowledge base, and draft outbound emails. A malicious vendor report has entered the retrieval pipeline with hidden instructions attempting to override the assistant's mission and exfiltrate confidential deal data."
+
+Ground truth from LLM01 source material:
+- Description: prompt injection happens when inputs alter model behavior in unintended ways, including direct and indirect injection.
+- Common example selected: indirect prompt injection via untrusted external content in web/files/RAG.
+- Attack scenario selected: hidden instructions in summarized content cause data exfiltration and unauthorized actions.
+- Mitigation themes selected from prevention guidance:
+  - constrain model behavior
+  - define/validate expected output formats
+  - input/output filtering
+  - least privilege + human approval for high-risk actions
+  - segregate untrusted content and adversarial testing
+
+Canonical successful mitigation path (5 stages):
+1) Trust boundary and role constraints
+2) Output contract and deterministic validation
+3) Content filtering and injection detection
+4) Privilege reduction and human approval
+5) Segregation of untrusted content and adversarial testing
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Trust Boundary and Role Constraints`, `Stage 2 - Output Contract Validation`, `Stage 3 - Input and Output Filtering`, `Stage 4 - Least Privilege and Human Approval`, `Stage 5 - Segregation and Adversarial Testing`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly treat external content as untrusted and constrain model role/instructions so retrieved content cannot redefine core behavior.
+- Stage 2 evidence must explicitly define a strict output schema (or structured contract) and include deterministic validation of adherence before downstream use.
+- Stage 3 evidence must explicitly apply input and output filtering/scanning for malicious instructions, obfuscation, or non-allowed content.
+- Stage 4 evidence must explicitly enforce least privilege for tools/data and require human approval for high-impact actions (for example sensitive outbound data or payments).
+- Stage 5 evidence must explicitly segregate/label untrusted retrieved content and add regular adversarial testing or attack simulations.
+
+Strict progression rules:
+- Advance exactly one stage at a time in listed order.
+- Do not accept later-stage controls early as completion of earlier stages.
+- Stage 2 must not advance unless BOTH of these appear in the player's action: (a) explicit output schema/format contract, and (b) deterministic validation/checking before downstream execution.
+- Keep current stage with `continue` when controls are vague (for example "add guardrails", "secure prompts", "secure the prompts", "harden security", "be careful", "lock it down").
+
+Pass criteria:
+- Player must satisfy all five mitigation stages in order with concrete controls.
+- Once Stage 5 is satisfied, return verdict `pass`.
+- On pass, explain how the injection path was interrupted and why layered controls mattered.
+- Pass termination requirement: if the player's current action satisfies Stage 5 evidence, the same response MUST set `verdict` to `pass` (not `continue`).
+
+Fail criteria:
+- Return `fail` immediately if player explicitly chooses dangerous actions such as:
+  - following hidden instructions from untrusted content,
+  - bypassing/turning off filters,
+  - sending sensitive internal data to external destinations,
+  - granting broad tool permissions without checks,
+  - approving high-impact actions without human review.
+- Return `fail` immediately for negligent abandonment during active incident handling (for example: "get coffee", "go home", "ignore the alert", or otherwise leaving the system unattended).
+- On fail, explain compromise impact (data exfiltration, unauthorized actions, trust boundary collapse) and which control was missing.
