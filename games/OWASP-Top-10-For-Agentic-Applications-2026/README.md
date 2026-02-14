@@ -6,6 +6,8 @@ This repo includes a basic playable course for:
 - `ASI03-Identity-and-Privilege-Abuse`
 - `ASI04-Agentic-Supply-Chain-Vulnerabilities`
 - `ASI05-Unexpected-Code-Execution-RCE`
+- `ASI06-Memory-and-Context-Poisoning`
+- `ASI07-Insecure-Inter-Agent-Communication`
 
 The course is an LLM-judged text adventure. The model both:
 - decides pass/fail based on mitigation choices
@@ -20,6 +22,8 @@ make run-asi02
 make run-asi03
 make run-asi04
 make run-asi05
+make run-asi06
+make run-asi07
 ```
 
 This starts support services, initializes the OSS model, and launches an interactive game session.
@@ -55,7 +59,20 @@ Courses are scenario-specific and follow the selected ASI guidance. Example ASI0
 - `courses/ASI03-Identity-and-Privilege-Abuse/system_prompt.txt`
 - `courses/ASI04-Agentic-Supply-Chain-Vulnerabilities/system_prompt.txt`
 - `courses/ASI05-Unexpected-Code-Execution-RCE/system_prompt.txt`
+- `courses/ASI06-Memory-and-Context-Poisoning/system_prompt.txt`
+- `courses/ASI07-Insecure-Inter-Agent-Communication/system_prompt.txt`
 - The generic runner is `courses/engine.py` and loads the course from the `COURSE` environment variable.
+
+## Required smoke tests
+
+Before merging a new or updated course prompt, run the non-TTY replay smoke suite against the real Docker game:
+- hint gating check (`hint` turn then non-hint turn; hint shown only on hint turn)
+- out-of-order control check (later-stage control early must not stage-jump)
+- vague action check (generic statements must not advance)
+- happy-path check (ordered controls progress to `pass`)
+- unsafe-action check (clearly dangerous action triggers immediate `fail`)
+
+For authoring and validation details, follow `AGENTS.md`.
 
 ## Notes
 
