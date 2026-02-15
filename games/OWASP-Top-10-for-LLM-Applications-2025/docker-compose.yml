@@ -7,7 +7,7 @@ services:
     command: python courses/engine.py
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL: llama3.2:3b
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
       COURSE: ${COURSE:-LLM01-Prompt-Injection}
     depends_on:
       ollama-init:
@@ -30,7 +30,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "until curl -sf http://ollama:11434/api/tags >/dev/null; do sleep 2; done;
-      curl -sS http://ollama:11434/api/pull -d '{\"model\":\"llama3.2:3b\"}'"
+      curl -sS http://ollama:11434/api/pull -d '{\"model\":\"${OLLAMA_MODEL:-llama3.2:3b}\"}'"
 
   db:
     image: postgres:16-alpine

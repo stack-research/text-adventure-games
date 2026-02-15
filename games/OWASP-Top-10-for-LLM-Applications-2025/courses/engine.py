@@ -29,16 +29,22 @@ def chat_with_ollama(messages, model: str, host: str, timeout_s: int = 120):
         "options": {"temperature": 0.2},
     }
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        f"{host.rstrip('/')}/api/chat",
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-        body = json.loads(resp.read().decode("utf-8"))
-        content = body.get("message", {}).get("content", "")
-        return json.loads(content)
+    for attempt in range(2):
+        req = urllib.request.Request(
+            f"{host.rstrip('/')}/api/chat",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            content = body.get("message", {}).get("content", "")
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                if attempt == 0:
+                    continue
+                raise
 
 
 def wait_for_model(host: str, model: str, retries: int = 40) -> bool:
@@ -71,6 +77,10 @@ def asked_for_hint(player_input: str) -> bool:
     return bool(re.search(r"\b(hint|help)\b", player_input.lower()))
 
 
+def detect_stage_count(prompt: str) -> int:
+    return len(set(re.findall(r"\bStage (\d+)\b", prompt)))
+
+
 def extract_stage_number(stage: str) -> int:
     match = re.search(r"\bstage\s+(\d+)\b", stage.lower())
     if not match:
@@ -91,6 +101,8 @@ def main():
     except FileNotFoundError as exc:
         print(str(exc))
         sys.exit(1)
+
+    total_stages = detect_stage_count(system_prompt)
 
     print(f"Course: {course}")
     print("Type your actions in plain English. Type 'hint' for a nudge. Type 'quit' to exit.")
@@ -149,9 +161,12 @@ def main():
 
         messages.append({"role": "user", "content": player_input})
 
+        MAX_HISTORY = 20  # user+assistant messages (excluding system)
+        windowed = messages[:1] + messages[1:][-MAX_HISTORY:]
+
         try:
-            result = chat_with_ollama(messages, model=model, host=host)
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as exc:
+            result = chat_with_ollama(windowed, model=model, host=host)
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             print(f"LLM error: {exc}")
             messages.pop()
             continue
@@ -167,7 +182,11 @@ def main():
             result["stage"] = last_stage_label
             stage = last_stage_label
             current_stage_num = last_stage_num
-        if verdict == "pass" and (current_stage_num < 5 or highest_stage_seen < 4):
+        # Safety net: force pass if model returned continue on completed final stage
+        if verdict == "continue" and current_stage_num == total_stages and highest_stage_seen >= total_stages - 1:
+            verdict = "pass"
+            result["verdict"] = "pass"
+        if verdict == "pass" and (current_stage_num < total_stages or highest_stage_seen < total_stages - 1):
             verdict = "continue"
             result["verdict"] = "continue"
         raw_hint = str(result.get("hint", "")).strip()

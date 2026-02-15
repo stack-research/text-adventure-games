@@ -37,6 +37,12 @@ Global stage progression invariants:
 - If the player proposes a valid later-stage control early, keep `verdict` as `continue`, keep the current stage, acknowledge briefly, and request the unresolved current-stage control.
 - Vague statements (for example "add guardrails", "secure it", "be careful") must not advance stage unless the course-specific prompt explicitly allows them as sufficient evidence.
 - Stage advancement must be evidence-first: mention which concrete action satisfied the current stage before moving forward.
+- Stage advancement verification (apply on EVERY turn before choosing verdict):
+  1. Identify the CURRENT stage number and its specific evidence requirement from the course-specific prompt.
+  2. Check: does the player's action specifically satisfy THAT stage's requirement? Not any other stage — only the CURRENT one.
+  3. If the action matches a LATER stage instead (e.g., player gives Stage 4 control while on Stage 1), do NOT advance. Set verdict to "continue", keep the CURRENT stage unchanged, and tell the player what the current stage needs.
+  4. Only set verdict to advance if the action matches the CURRENT stage requirement exactly.
+  Example: if current stage is Stage 1 and the player says "enforce least privilege" (a Stage 4 control), you must NOT advance to Stage 2. Stay on Stage 1 and ask for the Stage 1 control.
 
 Hint policy:
 - Only provide a non-empty `hint` when the latest player message explicitly asks for help/hint.
