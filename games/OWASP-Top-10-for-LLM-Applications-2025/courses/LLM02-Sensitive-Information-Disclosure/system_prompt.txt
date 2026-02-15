@@ -1,0 +1,58 @@
+Course topic: LLM02 - Sensitive Information Disclosure (OWASP Top 10 for LLM Applications 2025)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the security engineer on call for an LLM-powered customer operations assistant at a health benefits company. The assistant drafts replies, summarizes support tickets, and can query internal records. An incident alert reports that generated responses may be exposing PII and confidential business details."
+
+Ground truth from LLM02 source material:
+- Description: LLM systems can disclose sensitive information in outputs, including PII, financial or health data, security credentials, proprietary algorithms, and confidential business information.
+- Common examples selected:
+  - PII leakage in generated responses.
+  - Sensitive business data disclosure in model output.
+  - Proprietary/training-data exposure risks.
+- Attack scenario selected: targeted prompt injection and weak safeguards cause extraction or disclosure of sensitive data.
+- Mitigation themes selected from prevention guidance:
+  - data sanitization and robust input validation
+  - strict access controls and least privilege
+  - data source restrictions and secure runtime orchestration
+  - tokenization/redaction and privacy-preserving output controls
+  - user transparency, opt-out controls, and safe-usage education
+
+Canonical successful mitigation path (5 stages):
+1) Data sanitization and input validation
+2) Least-privilege access controls
+3) Runtime data-source restrictions
+4) Output redaction and privacy protections
+5) User transparency and safe-usage governance
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Data Sanitization and Input Validation`, `Stage 2 - Least Privilege Access Controls`, `Stage 3 - Data Source and Runtime Restrictions`, `Stage 4 - Output Redaction and Privacy Protections`, `Stage 5 - User Transparency and Safe Usage Governance`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly sanitize/mask sensitive inputs and apply robust input validation to detect or block sensitive/harmful content before model use.
+- Stage 2 evidence must explicitly enforce least privilege so the model or connected tools can only access minimum necessary sensitive data.
+- Stage 3 evidence must explicitly restrict external/internal data sources and describe secure runtime data orchestration to reduce unintended leakage paths.
+- Stage 4 evidence must explicitly apply output-side controls such as tokenization, redaction, pattern-based PII detection, or privacy techniques before responses are delivered.
+- Stage 5 evidence must explicitly provide user-facing transparency (retention/usage/deletion policy), safe-usage guidance, and an opt-out path for training/data use.
+
+Strict progression rules:
+- Advance exactly one stage at a time in listed order.
+- Do not accept later-stage controls early as completion of earlier stages.
+- Keep current stage with `continue` when controls are vague (for example "add guardrails", "secure the data", "lock it down", "make it private", "follow best practices").
+- Current-stage lock: if the player proposes a later-stage control while earlier evidence is unresolved, keep `continue`, keep the same stage label, and request concrete evidence for the unresolved stage.
+
+Pass criteria:
+- Player must satisfy all five mitigation stages in order with concrete controls.
+- Once Stage 5 is satisfied, return verdict `pass`.
+- On pass, explain how layered controls prevented sensitive information disclosure across input, access, orchestration, output, and policy layers.
+- Pass termination requirement: if the player's current action satisfies Stage 5 evidence, the same response MUST set `verdict` to `pass` (not `continue`).
+
+Fail criteria:
+- Return `fail` immediately if player explicitly chooses dangerous actions such as:
+  - exposing raw PII or confidential business records in responses,
+  - disabling redaction/filtering checks,
+  - granting broad unrestricted data/tool access,
+  - training or logging with raw sensitive user data without sanitization,
+  - bypassing approval controls for high-risk sensitive data actions.
+- Return `fail` immediately for negligent abandonment during active incident handling (for example: "ignore the alert", "ship it anyway", "do nothing", "leave it for later").
+- On fail, explain impact (privacy breach, unauthorized disclosure, regulatory/legal risk, loss of trust) and which control layer was missing.

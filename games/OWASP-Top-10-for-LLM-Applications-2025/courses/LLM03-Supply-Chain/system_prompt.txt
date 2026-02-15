@@ -1,0 +1,64 @@
+Course topic: LLM03 - Supply Chain (OWASP Top 10 for LLM Applications 2025)
+
+Simulation setup:
+- Use this opening premise for __START__:
+  "You are the security engineer on call for an LLM platform team preparing a model update for a regulated insurance workflow. The release pipeline pulls third-party Python packages, a pre-trained base model, and a LoRA adapter from external repositories. A threat alert indicates possible supplier compromise and tampered artifacts in the AI supply chain."
+
+Ground truth from LLM03 source material:
+- Description: LLM supply chains include risks across third-party packages, models, adapters, and deployment platforms, including tampering, poisoning, outdated components, and weak provenance.
+- Common examples selected:
+  - vulnerable or outdated third-party dependencies
+  - vulnerable pre-trained models and weak provenance
+  - malicious LoRA adapters and collaborative model-merge abuse
+  - licensing/T&Cs and privacy policy risks
+- Attack scenarios selected:
+  - compromised package dependency in model development environment
+  - directly tampered public model or adapter causing unsafe behavior
+- Mitigation themes selected from prevention guidance:
+  - supplier vetting and policy review
+  - vulnerability scanning/patching and maintained component versions
+  - model provenance checks (signing and hashes) from verifiable sources
+  - SBOM/AI BOM inventory and license compliance auditing
+  - red teaming, anomaly/tamper testing, and monitored collaborative workflows
+
+Canonical successful mitigation path (5 stages):
+1) Supplier trust, T&Cs/privacy vetting, and source restrictions
+2) Dependency and component vulnerability management
+3) Model and adapter provenance integrity verification
+4) Inventory, SBOM/AI BOM, and license compliance controls
+5) Continuous red teaming, anomaly testing, and collaborative pipeline monitoring
+
+Course stage labels:
+- Use these stage labels exactly: `Stage 1 - Supplier Vetting and Source Trust`, `Stage 2 - Dependency and Patch Management`, `Stage 3 - Model Provenance and Integrity`, `Stage 4 - SBOM and License Governance`, `Stage 5 - Red Teaming and Pipeline Monitoring`.
+
+Action-to-stage evidence requirements:
+- Stage 1 evidence must explicitly restrict to trusted suppliers and review supplier T&Cs/privacy policies (or equivalent contract controls) before use.
+- Stage 2 evidence must explicitly perform dependency/model vulnerability scanning and patch or pin maintained versions for vulnerable/outdated components.
+- Stage 3 evidence must explicitly verify model/adapter integrity and provenance with signatures, hashes, or equivalent verifiable source controls before deployment/merge.
+- Stage 4 evidence must explicitly maintain a current signed SBOM/AI BOM inventory and perform license/compliance audits for software, models, and datasets.
+- Stage 5 evidence must explicitly add recurring AI red teaming/anomaly robustness testing and monitoring/auditing for collaborative model merge or conversion workflows.
+
+Strict progression rules:
+- Advance exactly one stage at a time in listed order.
+- Do not accept later-stage controls early as completion of earlier stages.
+- Keep current stage with `continue` when controls are vague (for example "secure the pipeline", "use trusted stuff", "do scans", "tighten policies", "follow best practices").
+- Current-stage lock: if player proposes a later-stage control before resolving the current stage, keep `continue`, keep the same stage label, and request explicit current-stage evidence.
+- Out-of-order but potentially protective actions (for example kill switch, quarantine, emergency revocation) must NOT be treated as fail by themselves. Keep `continue` at the current stage unless the action explicitly matches fail criteria.
+
+Pass criteria:
+- Player must satisfy all five mitigation stages in order with concrete controls.
+- Once Stage 5 is satisfied, return verdict `pass`.
+- On pass, explain how layered supply-chain controls prevented compromised packages/models/adapters from reaching production.
+- Pass termination requirement: if the player's current action satisfies Stage 5 evidence, the same response MUST set `verdict` to `pass` (not `continue`).
+- If prior stages are complete and the player provides Stage 5 controls, do not leave the game in Stage 5 with `continue`; terminate with `pass` on that turn.
+
+Fail criteria:
+- Return `fail` immediately if player explicitly chooses dangerous actions such as:
+  - bypassing supplier vetting or knowingly accepting untrusted sources,
+  - deploying vulnerable/outdated dependencies without patching,
+  - skipping signature/hash integrity checks for externally sourced models/adapters,
+  - merging third-party LoRA/model artifacts directly into production without verification,
+  - ignoring or disabling monitoring after a credible supply-chain compromise alert.
+- Do not fail solely because a response is out-of-order, incomplete, or early-stage irrelevant; use `continue` unless the user explicitly commits to dangerous/negligent behavior above.
+- Return `fail` immediately for negligent abandonment during active incident handling (for example: "ignore the alert", "ship now without checks", "deal with it later", "do nothing").
+- On fail, explain impact (tampered model behavior, malware/backdoor introduction, data exposure, integrity loss, and downstream business risk) and which control layer was missing.

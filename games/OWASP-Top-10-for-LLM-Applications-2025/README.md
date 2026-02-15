@@ -1,9 +1,11 @@
 # OWASP LLM Top 10 Text Adventure Courses
 
-This repo currently includes one playable course:
+This repo currently includes three playable courses:
 - `LLM01-Prompt-Injection`
+- `LLM02-Sensitive-Information-Disclosure`
+- `LLM03-Supply-Chain`
 
-The structure is ready to add `LLM02` through `LLM10` next.
+The structure is ready to add `LLM04` through `LLM10` next.
 
 The course is an LLM-judged text adventure. The model both:
 - decides pass/fail based on mitigation choices
@@ -14,10 +16,15 @@ The course is an LLM-judged text adventure. The model both:
 ```bash
 make course-list
 make run-llm01
+make run-llm02
+make run-llm03
 ```
 
 This starts support services, initializes the OSS model, and launches an interactive game session.
-`make course-list` outputs entries like `LLM01-Prompt-Injection -> make run-llm01`.
+`make course-list` outputs entries like:
+- `LLM01-Prompt-Injection -> make run-llm01`
+- `LLM02-Sensitive-Information-Disclosure -> make run-llm02`
+- `LLM03-Supply-Chain -> make run-llm03`
 
 Shortcuts:
 

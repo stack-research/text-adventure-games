@@ -1,11 +1,13 @@
 COMPOSE ?= docker compose
 
-.PHONY: help up init run-llm01 course-list down
+.PHONY: help up init run-llm01 run-llm02 run-llm03 course-list down
 
 help:
 	@echo "Targets:"
 	@echo "  make course-list                # List available courses"
 	@echo "  make run-llm01                  # Run LLM01 course"
+	@echo "  make run-llm02                  # Run LLM02 course"
+	@echo "  make run-llm03                  # Run LLM03 course"
 	@echo "  make up                         # Start support services"
 	@echo "  make init                       # Pull/initialize LLM model"
 	@echo "  make down                       # Stop all services"
@@ -18,6 +20,12 @@ init: up
 
 run-llm01: init
 	COURSE=LLM01-Prompt-Injection $(COMPOSE) run --rm game
+
+run-llm02: init
+	COURSE=LLM02-Sensitive-Information-Disclosure $(COMPOSE) run --rm game
+
+run-llm03: init
+	COURSE=LLM03-Supply-Chain $(COMPOSE) run --rm game
 
 course-list:
 	@find courses -mindepth 1 -maxdepth 1 -type d -exec basename {} \; \

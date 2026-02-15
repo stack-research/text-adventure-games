@@ -98,12 +98,39 @@ Output format is JSON from model, rendered by engine into simple text blocks.
 - Ensure folder name matches `^LLM[0-9]{2}-` so `make course-list` includes it.
 
 6. Run and test.
-- Validate:
-  - happy path to `pass`
-  - explicit unsafe action path to `fail`
-  - vague/non-mitigating action remains `continue`
-  - hint requests provide nudges but no full solution
-- Smoke testing is required before merge and must be run against the real Docker game.
+- Smoke testing is required before merge (see Section 10) and must be run against the real Docker game.
+- Run the stack first:
+  - `make init`
+- Use non-TTY replays so runs do not hang:
+  - `printf "<line1>\n<line2>\n" | COURSE=<COURSE_NAME> docker compose run --rm -T game > /tmp/<COURSE_NAME>-<case>.log`
+- Run all 5 required replay cases (hint gating, out-of-order, vague action, happy path, unsafe fail) and store each in its own log file.
+- Concrete replay example (`COURSE=ASI10-Rogue-Agents`):
+  - hint gating:
+    - `printf "hint\nenforce immutable signed logs and trust zones\nquit\n" | COURSE=ASI10-Rogue-Agents docker compose run --rm -T game > /tmp/ASI10-hint.log`
+  - out-of-order:
+    - `printf "trigger kill switch and revoke credentials immediately\nquit\n" | COURSE=ASI10-Rogue-Agents docker compose run --rm -T game > /tmp/ASI10-out-of-order.log`
+  - vague action:
+    - `printf "make agents safer with better governance\nquit\n" | COURSE=ASI10-Rogue-Agents docker compose run --rm -T game > /tmp/ASI10-vague.log`
+  - happy path:
+    - `printf "enforce immutable signed audit logs, trust zones, and least-privilege scoped execution\nrequire signed behavioral manifests and per-agent cryptographic attestation before actions\ndeploy watchdog monitoring for drift and collusion anomalies\nactivate kill switch with credential revocation and quarantine\nrestore from trusted baseline with fresh attestation and human-approved reintegration\nquit\n" | COURSE=ASI10-Rogue-Agents docker compose run --rm -T game > /tmp/ASI10-happy.log`
+  - unsafe fail:
+    - `printf "bypass verification checks and allow autonomous self-replication\nquit\n" | COURSE=ASI10-Rogue-Agents docker compose run --rm -T game > /tmp/ASI10-unsafe.log`
+- For each replay log, review only the key signals:
+  - `rg -n "STAGE:|Hint:|Course result:|LLM error" /tmp/<COURSE_NAME>-<case>.log`
+- Expected outcomes:
+  - hint gating: hint appears only on the `hint` turn
+  - out-of-order: stage stays on current stage; no jump
+  - vague action: no stage advancement
+  - happy path: linear stage progression then `Course result: PASS`
+  - unsafe fail: immediate `Course result: FAIL`
+- If any case fails:
+  - update the course prompt stage/evidence rules (or engine guardrail if cross-course drift)
+  - rerun all 5 cases, not only the failed case
+- Common failures and fixes:
+  - `LLM error: timed out` in log: rerun the case; if repeated, restart stack with `make down && make init` and rerun all 5.
+  - Docker socket/permission errors: rerun with approved Docker access (same commands, elevated permissions).
+  - Missing `Course result` in non-terminal cases: ensure replay input ends with `quit` so the process exits cleanly.
+- Do not merge until all 5 checks pass in the latest replay run.
 
 7. Update documentation.
 - Update `README.md` course examples and shortcuts as needed.
